@@ -31,8 +31,9 @@ default_args = {
 
 
 @dag(
+    "one-to-three",
     default_args=default_args,
-    # schedule_interval=timedelta(seconds=30),
+    schedule_interval=timedelta(seconds=60),
     start_date=days_ago(2),
     tags=["example"],
     catchup=False,
