@@ -60,13 +60,13 @@ def one_two_three_taskflow():
         print(data)
         print("Failure")
 
-    result_one = one()
-    result_two = two(result_one[SUCCESS])
-    result_three = three(result_two[SUCCESS])
+    results_one = one()
+    results_two = two(results_one[SUCCESS])
+    results_three = three(results_two[SUCCESS])
 
-    failure(result_one[FAILURE])
-    failure(result_two[FAILURE])
-    failure(result_three[FAILURE])
+    failure(results_one[FAILURE])
+    failure(results_two[FAILURE])
+    failure(results_three[FAILURE])
 
 
 one_two_three_dag = one_two_three_taskflow()
