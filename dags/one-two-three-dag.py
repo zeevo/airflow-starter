@@ -1,12 +1,10 @@
 from datetime import timedelta
-from textwrap import dedent
+from typing import Any, Dict
 
-# The DAG object; we'll need this to instantiate a DAG
-from airflow import DAG
-
-# Operators; we need this to operate!
-from airflow.operators.bash import BashOperator
+from airflow.decorators import dag, task
 from airflow.utils.dates import days_ago
+
+from constants.relationships import SUCCESS, FAILURE
 
 # These args will get passed on to each operator
 # You can override them on a per-task basis during operator initialization
@@ -30,34 +28,44 @@ default_args = {
     # 'sla_miss_callback': yet_another_function,
     # 'trigger_rule': 'all_success'
 }
-with DAG(
-    "tutorial",
+
+
+@dag(
     default_args=default_args,
-    description="A simple tutorial DAG",
-    schedule_interval=timedelta(seconds=20),
+    # schedule_interval=timedelta(seconds=30),
     start_date=days_ago(2),
     tags=["example"],
     catchup=False,
-) as dag:
+)
+def one_two_three_taskflow():
+    @task
+    def one() -> Dict[str, Any]:
+        return {SUCCESS: 1}
 
-    # t1, t2 and t3 are examples of tasks created by instantiating operators
-    t1 = BashOperator(
-        task_id="one",
-        bash_command='echo "sleeping one..."; sleep 5',
-    )
+    @task
+    def two(data) -> Dict[str, Any]:
+        print(data)
+        assert data == 1
+        return {SUCCESS: 2}
 
-    t2 = BashOperator(
-        task_id="two",
-        depends_on_past=False,
-        bash_command='echo "sleeping two..."; sleep 5',
-        retries=3,
-    )
+    @task
+    def three(data) -> Dict[str, Any]:
+        print(data)
+        assert data == 2
+        return {SUCCESS: 2}
 
-    t3 = BashOperator(
-        task_id="three",
-        depends_on_past=False,
-        bash_command='echo "sleeping three..."; sleep 5',
-        retries=3,
-    )
+    @task
+    def failure(data):
+        print(data)
+        print("Failure")
 
-    t1 >> t2 >> t3
+    result_one = one()
+    result_two = two(result_one[SUCCESS])
+    result_three = three(result_two[SUCCESS])
+
+    failure(result_one[FAILURE])
+    failure(result_two[FAILURE])
+    failure(result_three[FAILURE])
+
+
+one_two_three_dag = one_two_three_taskflow()
