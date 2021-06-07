@@ -146,5 +146,14 @@ services:
       retries: 5
     restart: always
 
+  mongo:
+    image: "mongo"
+    environment:
+      - MONGO_INITDB_DATABASE=${AIRFLOW_IMAGE_NAME:-airflow}
+    volumes:
+      - ./mongo:/data/db
+    ports:
+      - "27017:27017"
+
 volumes:
   postgres-db-volume:
